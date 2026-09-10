@@ -25,41 +25,34 @@ jobs:
           channel: 'stable'
 
       - name: Initialize Project
-        run: flutter create --org com.benzo.manga manga_app
-
-      - name: Inject Complete BENZO Code
-        shell: python
         run: |
-          code = r'''
+          flutter config --no-analytics
+          flutter create --org com.benzo.manga manga_app
+
+      - name: Write Complete BENZO Application
+        run: |
+          cat << 'END_DART_CODE' > manga_app/lib/main.dart
           import 'package:flutter/material.dart';
 
-          void main() => runApp(const MangaAlArabEmpire());
+          void main() => runApp(const MangaEmpireApp());
 
           enum Role { owner, headAdmin, superAdmin, adminMonth, admin, translator, editor, member, guest }
 
           class VipPackage {
-            final String id;
             final String name;
             final String perks;
-            final int pointsPrice;
+            final int points;
             final Color color;
-
-            VipPackage({
-              required this.id,
-              required this.name,
-              required this.perks,
-              required this.pointsPrice,
-              required this.color,
-            });
+            VipPackage(this.name, this.perks, this.points, this.color);
           }
 
-          class MangaAlArabEmpire extends StatefulWidget {
-            const MangaAlArabEmpire({Key? key}) : super(key: key);
+          class MangaEmpireApp extends StatefulWidget {
+            const MangaEmpireApp({Key? key}) : super(key: key);
             @override
-            State<MangaAlArabEmpire> createState() => _MangaAlArabEmpireState();
+            State<MangaEmpireApp> createState() => _MangaEmpireAppState();
           }
 
-          class _MangaAlArabEmpireState extends State<MangaAlArabEmpire> {
+          class _MangaEmpireAppState extends State<MangaEmpireApp> {
             Role currentRole = Role.guest;
             String currentUser = "ضيف BENZO";
             bool isLoggedIn = false;
@@ -69,78 +62,58 @@ jobs:
             bool doublePoints = false;
             bool triplePoints = false;
             bool browserUnlocked = false;
-            bool exclusiveSourcesUnlocked = false;
-            bool offlineDownloadUnlocked = false;
+            bool exclusiveUnlocked = false;
+            bool offlineUnlocked = false;
             String discordUrl = "https://discord.gg/manga-alarab";
-            String? currentActiveBroadcast;
+            String? broadcastNotice;
 
             final List<VipPackage> packages = [
-              VipPackage(
-                id: "1",
-                name: "باقة المحارب الفضي ⚔️",
-                perks: "إزالة الإعلانات بالكامل + شارة فضية مميزة + قراءة غير محدودة.",
-                pointsPrice: 5000,
-                color: Colors.blueGrey,
-              ),
-              VipPackage(
-                id: "2",
-                name: "باقة التنين الذهبي 🐉",
-                perks: "فتح مصادر سوات ومانجاليك + هالة ذهبية للبروفايل + خصم 20% بالنقاط.",
-                pointsPrice: 12000,
-                color: const Color(0xFFFFB703),
-              ),
-              VipPackage(
-                id: "3",
-                name: "باقة إمبراطور المانجا 👑",
-                perks: "دبل نقاط دائم (1000 نقطة لكل 5 فصول) + خط ملون متوهج + فصول تيم إكس.",
-                pointsPrice: 25000,
-                color: Colors.purpleAccent,
-              ),
-              VipPackage(
-                id: "4",
-                name: "باقة حاكم الظلال الأبدي ⚡",
-                perks: "تحميل الفصول وقراءتها بدون إنترنت + طلب ترجمة أعمال حصرية + شارة نارية.",
-                pointsPrice: 50000,
-                color: Colors.cyanAccent,
-              ),
-              VipPackage(
-                id: "5",
-                name: "باقة العرش الإلهي (VIP المطلق) 🪐",
-                perks: "تربل نقاط (1500 نقطة / 3 فصول) + ثيم ملكي + متصفح أدوات المانجا + شات كبار الشخصيات.",
-                pointsPrice: 100000,
-                color: Colors.redAccent,
-              ),
+              VipPackage("باقة المحارب الفضي ⚔️", "إزالة الإعلانات بالكامل + شارة فضية + قراءة غير محدودة.", 5000, Colors.blueGrey),
+              VipPackage("باقة التنين الذهبي 🐉", "فتح مصادر سوات ومانجاليك + هالة ذهبية للبروفايل + خصم نقاط.", 12000, const Color(0xFFFFB703)),
+              VipPackage("باقة إمبراطور المانجا 👑", "دبل نقاط دائم (1000 نقطة لكل 5 فصول) + خط ملون متوهج + فصول تيم إكس.", 25000, Colors.purpleAccent),
+              VipPackage("باقة حاكم الظلال الأبدي ⚡", "تحميل الفصول وقراءتها بدون إنترنت + طلب ترجمة أعمال حصرية + شارة نارية.", 50000, Colors.cyanAccent),
+              VipPackage("باقة العرش الإلهي 🪐", "تربل نقاط (1500 نقطة / 3 فصول) + ثيم ملكي + متصفح أدوات المانجا + شات كبار الشخصيات.", 100000, Colors.redAccent),
             ];
 
-            final List<String> auditLogs = [
-              "[أمان] تشغيل درع الحماية ومكافحة التخريب اللحظي لإمبراطورية BENZO.",
-              "[سيرفر] دمج مصادر سوات مانجا وتيم إكس ومانجاليك.",
+            final List<String> comments = [
+              "👑 BENZO (الفاوندر): مرحبًا بكم في إمبراطورية BENZO الرسمية!",
+              "✍️ محرر سوات: تم رفع فصول سولو ليفلينج بدقة عالية.",
+              "⚡ حاكم الظلال: ميزة التحميل بدون إنترنت ممتازة وسريعة.",
             ];
 
-            void addLog(String log) {
-              setState(() {
-                auditLogs.insert(0, "[${DateTime.now().hour}:${DateTime.now().minute}] $log");
-              });
+            String getRoleTag(Role r) {
+              switch (r) {
+                case Role.owner: return "👑 BENZO (الفاوندر والمالك)";
+                case Role.headAdmin: return "⚡ هيد ادمن";
+                case Role.superAdmin: return "🛡️ سوبر ادمن";
+                case Role.adminMonth: return "⭐ ادمن الشهر";
+                case Role.admin: return "🔰 ادمن";
+                case Role.translator: return "✍️ مترجم";
+                case Role.editor: return "🎨 محرر";
+                case Role.member: return "👤 عضو";
+                case Role.guest: return "👀 ضيف (قراءة مقفلة)";
+              }
             }
 
-            void loginAs(String username, Role role) {
+            void handleLogin(String username) {
               setState(() {
                 currentUser = username;
-                currentRole = role;
                 isLoggedIn = true;
-                if (role == Role.owner) {
+                if (username.toUpperCase() == "BENZO" || username.toLowerCase() == "owner" || username == "الفاوندر") {
+                  currentRole = Role.owner;
                   userPoints = 999999;
                   doublePoints = true;
                   triplePoints = true;
                   browserUnlocked = true;
-                  exclusiveSourcesUnlocked = true;
-                  offlineDownloadUnlocked = true;
+                  exclusiveUnlocked = true;
+                  offlineUnlocked = true;
+                } else {
+                  currentRole = Role.member;
                 }
               });
-              addLog("دخول ناجح: $username برتبة: $role");
             }
 
-            void logout() {
+            void handleLogout() {
               setState(() {
                 currentRole = Role.guest;
                 currentUser = "ضيف BENZO";
@@ -148,10 +121,9 @@ jobs:
                 browserUnlocked = false;
                 doublePoints = false;
                 triplePoints = false;
-                exclusiveSourcesUnlocked = false;
-                offlineDownloadUnlocked = false;
+                exclusiveUnlocked = false;
+                offlineUnlocked = false;
               });
-              addLog("تم تسجيل الخروج");
             }
 
             @override
@@ -166,7 +138,7 @@ jobs:
                 ),
                 home: Directionality(
                   textDirection: TextDirection.rtl,
-                  child: MainHomeScreen(
+                  child: HomeScreenWidget(
                     appName: appName,
                     logoUrl: logoUrl,
                     currentUser: currentUser,
@@ -176,36 +148,32 @@ jobs:
                     doublePoints: doublePoints,
                     triplePoints: triplePoints,
                     browserUnlocked: browserUnlocked,
-                    exclusiveSourcesUnlocked: exclusiveSourcesUnlocked,
-                    offlineDownloadUnlocked: offlineDownloadUnlocked,
+                    exclusiveUnlocked: exclusiveUnlocked,
+                    offlineUnlocked: offlineUnlocked,
                     discordUrl: discordUrl,
+                    broadcastNotice: broadcastNotice,
                     packages: packages,
-                    auditLogs: auditLogs,
-                    currentBroadcast: currentActiveBroadcast,
-                    onLogin: loginAs,
-                    onLogout: logout,
-                    onPointsChanged: (p) => setState(() => userPoints += p),
-                    onNameChanged: (n) { setState(() => appName = n); addLog("تعديل الاسم إلى: $n"); },
-                    onLogoChanged: (l) { setState(() => logoUrl = l); addLog("تحديث الشعار"); },
-                    onDiscordChanged: (d) { setState(() => discordUrl = d); addLog("تحديث ديسكورد"); },
-                    onToggleBrowser: (v) { setState(() => browserUnlocked = v); addLog("تبديل حالة المتصفح"); },
-                    onToggleDoublePoints: (v) { setState(() => doublePoints = v); addLog("تبديل دبل النقاط"); },
-                    onToggleSources: (v) { setState(() => exclusiveSourcesUnlocked = v); addLog("تبديل المصادر"); },
-                    onAddPackage: (pkg) {
-                      setState(() => packages.add(pkg));
-                      addLog("إنشاء باقة جديدة: ${pkg.name}");
-                    },
-                    onBroadcastSent: (msg) {
-                      setState(() => currentActiveBroadcast = msg);
-                      addLog("إرسال إشعار فوري: $msg");
-                    },
+                    comments: comments,
+                    roleTag: getRoleTag(currentRole),
+                    onLogin: handleLogin,
+                    onLogout: handleLogout,
+                    onAddPoints: (p) => setState(() => userPoints += p),
+                    onUpdateName: (n) => setState(() => appName = n),
+                    onUpdateLogo: (l) => setState(() => logoUrl = l),
+                    onUpdateDiscord: (d) => setState(() => discordUrl = d),
+                    onToggleBrowser: (v) => setState(() => browserUnlocked = v),
+                    onToggleDouble: (v) => setState(() => doublePoints = v),
+                    onToggleExclusive: (v) => setState(() => exclusiveUnlocked = v),
+                    onSendBroadcast: (b) => setState(() => broadcastNotice = b),
+                    onAddPackage: (pkg) => setState(() => packages.add(pkg)),
+                    onAddComment: (c) => setState(() => comments.insert(0, c)),
                   ),
                 ),
               );
             }
           }
 
-          class MainHomeScreen extends StatefulWidget {
+          class HomeScreenWidget extends StatefulWidget {
             final String appName;
             final String logoUrl;
             final String currentUser;
@@ -215,25 +183,27 @@ jobs:
             final bool doublePoints;
             final bool triplePoints;
             final bool browserUnlocked;
-            final bool exclusiveSourcesUnlocked;
-            final bool offlineDownloadUnlocked;
+            final bool exclusiveUnlocked;
+            final bool offlineUnlocked;
             final String discordUrl;
+            final String? broadcastNotice;
             final List<VipPackage> packages;
-            final List<String> auditLogs;
-            final String? currentBroadcast;
-            final Function(String, Role) onLogin;
+            final List<String> comments;
+            final String roleTag;
+            final Function(String) onLogin;
             final VoidCallback onLogout;
-            final Function(int) onPointsChanged;
-            final Function(String) onNameChanged;
-            final Function(String) onLogoChanged;
-            final Function(String) onDiscordChanged;
+            final Function(int) onAddPoints;
+            final Function(String) onUpdateName;
+            final Function(String) onUpdateLogo;
+            final Function(String) onUpdateDiscord;
             final Function(bool) onToggleBrowser;
-            final Function(bool) onToggleDoublePoints;
-            final Function(bool) onToggleSources;
+            final Function(bool) onToggleDouble;
+            final Function(bool) onToggleExclusive;
+            final Function(String) onSendBroadcast;
             final Function(VipPackage) onAddPackage;
-            final Function(String) onBroadcastSent;
+            final Function(String) onAddComment;
 
-            const MainHomeScreen({
+            const HomeScreenWidget({
               Key? key,
               required this.appName,
               required this.logoUrl,
@@ -244,29 +214,107 @@ jobs:
               required this.doublePoints,
               required this.triplePoints,
               required this.browserUnlocked,
-              required this.exclusiveSourcesUnlocked,
-              required this.offlineDownloadUnlocked,
+              required this.exclusiveUnlocked,
+              required this.offlineUnlocked,
               required this.discordUrl,
+              this.broadcastNotice,
               required this.packages,
-              required this.auditLogs,
-              this.currentBroadcast,
+              required this.comments,
+              required this.roleTag,
               required this.onLogin,
               required this.onLogout,
-              required this.onPointsChanged,
-              required this.onNameChanged,
-              required this.onLogoChanged,
-              required this.onDiscordChanged,
+              required this.onAddPoints,
+              required this.onUpdateName,
+              required this.onUpdateLogo,
+              required this.onUpdateDiscord,
               required this.onToggleBrowser,
-              required this.onToggleDoublePoints,
-              required this.onToggleSources,
+              required this.onToggleDouble,
+              required this.onToggleExclusive,
+              required this.onSendBroadcast,
               required this.onAddPackage,
-              required this.onBroadcastSent,
+              required this.onAddComment,
             }) : super(key: key);
 
             @override
-            State<MainHomeScreen> createState() => _MainHomeScreenState();
+            State<HomeScreenWidget> createState() => _HomeScreenWidgetState();
           }
 
-          class _MainHomeScreenState extends State<MainHomeScreen> {
+          class _HomeScreenWidgetState extends State<HomeScreenWidget> {
             int _tab = 0;
-            final Lis
+
+            bool get showBrowser => widget.currentRole == Role.owner || widget.browserUnlocked;
+
+            @override
+            Widget build(BuildContext context) {
+              List<Widget> views = [
+                _buildHomeTab(),
+                if (showBrowser) _buildBrowserTab(),
+                _buildPackagesTab(),
+                _buildSupportersTab(),
+                _buildProfileTab(),
+                if (widget.currentRole == Role.owner) _buildOwnerRoomTab(),
+              ];
+
+              List<BottomNavigationBarItem> navItems = [
+                const BottomNavigationBarItem(icon: Icon(Icons.home), label: "الرئيسية"),
+                if (showBrowser)
+                  const BottomNavigationBarItem(icon: Icon(Icons.language), label: "المتصفح"),
+                const BottomNavigationBarItem(icon: Icon(Icons.star), label: "الباقات الـ 5"),
+                const BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: "الداعمين"),
+                const BottomNavigationBarItem(icon: Icon(Icons.person), label: "بروفايلي"),
+                if (widget.currentRole == Role.owner)
+                  const BottomNavigationBarItem(icon: Icon(Icons.build), label: "غرفة BENZO"),
+              ];
+
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: const Color(0xFF0F0F1A),
+                  elevation: 6,
+                  title: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFFFB703), width: 2),
+                          image: DecorationImage(image: NetworkImage(widget.logoUrl), fit: BoxFit.cover),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.appName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFFFFB703))),
+                          Text(widget.roleTag, style: const TextStyle(fontSize: 10, color: Colors.white70)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(widget.isLoggedIn ? Icons.logout : Icons.login, color: const Color(0xFFFFB703)),
+                      onPressed: () {
+                        if (widget.isLoggedIn) {
+                          widget.onLogout();
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("تم تسجيل الخروج بنجاح.")));
+                        } else {
+                          _showAuthDialog();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                body: Column(
+                  children: [
+                    if (widget.broadcastNotice != null)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        color: Colors.redAccent.shade700,
+                        child: Text(
+                          "إشعار من BENZO: ${widget.broadcastNotice}",
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    Expanded(child: views[_tab >= views.length ? 0 : _tab]),
