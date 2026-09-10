@@ -1,4 +1,4 @@
-name: Build Manga Al-Arab Masterpiece
+name: Build BENZO Manga Empire
 
 on:
   push:
@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -24,11 +24,13 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Compile Ultimate App
+      - name: Initialize Project
+        run: flutter create --org com.benzo.manga manga_app
+
+      - name: Inject Complete BENZO Code
+        shell: python
         run: |
-          flutter create --org com.manga.alarab manga_app
-          cd manga_app
-          cat << 'EOF' > lib/main.dart
+          code = r'''
           import 'package:flutter/material.dart';
 
           void main() => runApp(const MangaAlArabEmpire());
@@ -41,9 +43,6 @@ jobs:
             final String perks;
             final int pointsPrice;
             final Color color;
-            final bool hasDoublePoints;
-            final bool hasOffline;
-            final bool hasExclusiveSources;
 
             VipPackage({
               required this.id,
@@ -51,9 +50,6 @@ jobs:
               required this.perks,
               required this.pointsPrice,
               required this.color,
-              this.hasDoublePoints = false,
-              this.hasOffline = false,
-              this.hasExclusiveSources = false,
             });
           }
 
@@ -70,14 +66,12 @@ jobs:
             String appName = "BENZO";
             String logoUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400";
             int userPoints = 1000;
-            bool antiHackShield = true;
             bool doublePoints = false;
             bool triplePoints = false;
             bool browserUnlocked = false;
             bool exclusiveSourcesUnlocked = false;
             bool offlineDownloadUnlocked = false;
             String discordUrl = "https://discord.gg/manga-alarab";
-            Color currentThemeColor = const Color(0xFFFFB703);
             String? currentActiveBroadcast;
 
             final List<VipPackage> packages = [
@@ -86,7 +80,7 @@ jobs:
                 name: "باقة المحارب الفضي ⚔️",
                 perks: "إزالة الإعلانات بالكامل + شارة فضية مميزة + قراءة غير محدودة.",
                 pointsPrice: 5000,
-                color: Colors.blueGrey.shade300,
+                color: Colors.blueGrey,
               ),
               VipPackage(
                 id: "2",
@@ -94,7 +88,6 @@ jobs:
                 perks: "فتح مصادر سوات ومانجاليك + هالة ذهبية للبروفايل + خصم 20% بالنقاط.",
                 pointsPrice: 12000,
                 color: const Color(0xFFFFB703),
-                hasExclusiveSources: true,
               ),
               VipPackage(
                 id: "3",
@@ -102,8 +95,6 @@ jobs:
                 perks: "دبل نقاط دائم (1000 نقطة لكل 5 فصول) + خط ملون متوهج + فصول تيم إكس.",
                 pointsPrice: 25000,
                 color: Colors.purpleAccent,
-                hasDoublePoints: true,
-                hasExclusiveSources: true,
               ),
               VipPackage(
                 id: "4",
@@ -111,9 +102,6 @@ jobs:
                 perks: "تحميل الفصول وقراءتها بدون إنترنت + طلب ترجمة أعمال حصرية + شارة نارية.",
                 pointsPrice: 50000,
                 color: Colors.cyanAccent,
-                hasDoublePoints: true,
-                hasOffline: true,
-                hasExclusiveSources: true,
               ),
               VipPackage(
                 id: "5",
@@ -121,9 +109,6 @@ jobs:
                 perks: "تربل نقاط (1500 نقطة / 3 فصول) + ثيم ملكي + متصفح أدوات المانجا + شات كبار الشخصيات.",
                 pointsPrice: 100000,
                 color: Colors.redAccent,
-                hasDoublePoints: true,
-                hasOffline: true,
-                hasExclusiveSources: true,
               ),
             ];
 
@@ -150,10 +135,9 @@ jobs:
                   browserUnlocked = true;
                   exclusiveSourcesUnlocked = true;
                   offlineDownloadUnlocked = true;
-                  currentThemeColor = const Color(0xFFFFB703);
                 }
               });
-              addLog("دخول ناجح للمستخدم: $username برتبة: $role");
+              addLog("دخول ناجح: $username برتبة: $role");
             }
 
             void logout() {
@@ -178,7 +162,7 @@ jobs:
                 theme: ThemeData.dark().copyWith(
                   scaffoldBackgroundColor: const Color(0xFF07070C),
                   cardColor: const Color(0xFF12121E),
-                  primaryColor: currentThemeColor,
+                  primaryColor: const Color(0xFFFFB703),
                 ),
                 home: Directionality(
                   textDirection: TextDirection.rtl,
@@ -201,19 +185,19 @@ jobs:
                     onLogin: loginAs,
                     onLogout: logout,
                     onPointsChanged: (p) => setState(() => userPoints += p),
-                    onNameChanged: (n) { setState(() => appName = n); addLog("تم تغيير اسم التطبيق إلى: $n"); },
-                    onLogoChanged: (l) { setState(() => logoUrl = l); addLog("تم تحديث شعار التطبيق"); },
-                    onDiscordChanged: (d) { setState(() => discordUrl = d); addLog("تم تحديث رابط ديسكورد"); },
-                    onToggleBrowser: (v) { setState(() => browserUnlocked = v); addLog("تم ${v ? 'تفعيل' : 'تعطيل'} المتصفح"); },
-                    onToggleDoublePoints: (v) { setState(() => doublePoints = v); addLog("تم تعديل دبل النقاط"); },
-                    onToggleSources: (v) { setState(() => exclusiveSourcesUnlocked = v); addLog("تم تعديل المصادر"); },
+                    onNameChanged: (n) { setState(() => appName = n); addLog("تعديل الاسم إلى: $n"); },
+                    onLogoChanged: (l) { setState(() => logoUrl = l); addLog("تحديث الشعار"); },
+                    onDiscordChanged: (d) { setState(() => discordUrl = d); addLog("تحديث ديسكورد"); },
+                    onToggleBrowser: (v) { setState(() => browserUnlocked = v); addLog("تبديل حالة المتصفح"); },
+                    onToggleDoublePoints: (v) { setState(() => doublePoints = v); addLog("تبديل دبل النقاط"); },
+                    onToggleSources: (v) { setState(() => exclusiveSourcesUnlocked = v); addLog("تبديل المصادر"); },
                     onAddPackage: (pkg) {
                       setState(() => packages.add(pkg));
-                      addLog("قام المالك BENZO بإنشاء باقة جديدة: ${pkg.name}");
+                      addLog("إنشاء باقة جديدة: ${pkg.name}");
                     },
                     onBroadcastSent: (msg) {
                       setState(() => currentActiveBroadcast = msg);
-                      addLog("تم إرسال إشعار فوري لجميع المستخدمين: $msg");
+                      addLog("إرسال إشعار فوري: $msg");
                     },
                   ),
                 ),
@@ -285,34 +269,4 @@ jobs:
 
           class _MainHomeScreenState extends State<MainHomeScreen> {
             int _tab = 0;
-            final List<String> _comments = [
-              "👑 BENZO (الفاوندر): مرحبًا بكم في إمبراطورية BENZO الرسمية!",
-              "✍️ محرر سوات: فصول سولو ليفلينج راجناروك متوفرة الآن بدقة 4K.",
-              "⚡ حاكم الظلال: تم تفعيل التحميل بدون نت من تطبيق BENZO بنجاح!",
-            ];
-
-            String getRoleTag(Role r) {
-              switch (r) {
-                case Role.owner: return "👑 BENZO (الفاوندر والمالك)";
-                case Role.headAdmin: return "⚡ هيد ادمن";
-                case Role.superAdmin: return "🛡️ سوبر ادمن";
-                case Role.adminMonth: return "⭐ ادمن الشهر";
-                case Role.admin: return "🔰 ادمن";
-                case Role.translator: return "✍️ مترجم";
-                case Role.editor: return "🎨 محرر";
-                case Role.member: return "👤 عضو";
-                case Role.guest: return "👀 ضيف (قراءة مقفلة)";
-              }
-            }
-
-            bool get canUseBrowser => widget.currentRole == Role.owner || widget.browserUnlocked;
-
-            @override
-            Widget build(BuildContext context) {
-              List<Widget> views = [
-                _buildHome(),
-                if (canUseBrowser) _buildBrowser(),
-                _buildPackagesTab(),
-                _buildSupportersTab(),
-                _buildProfileTab(),
-                if (widget.currentRole == Role.owner) _buil
+            final Lis
